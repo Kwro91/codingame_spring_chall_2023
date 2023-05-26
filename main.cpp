@@ -158,7 +158,9 @@ int	count_type_in_side(std::vector<Cell> cells, int side, int number_of_values, 
 
 void	parsing_the_distance(std::vector<Cell> cells, int index, int distance)
 {
-	cells[index].distance_my_base = distance;
+    cerr << "simple verif de parsing, mon index est de : " << index << " ma distance de la base est de : " << distance <<endl;
+    if (cells[index].distance_my_base > distance)
+	    cells[index].distance_my_base = distance;
 	if (cells[index].neigh_0 > -1 && (cells[index].distance_my_base + 1 < cells[cells[index].neigh_0].distance_my_base))
 		parsing_the_distance(cells, cells[index].neigh_0, distance + 1);
 
@@ -183,6 +185,8 @@ class Game
 {
     public:
 
+    int total_crystal_start = 0;
+    int total_crystal_now = 0;
     int my_base_index = 0;
     int opp_base_index = 0;
    	int my_tants = 10;
@@ -214,6 +218,7 @@ class Game
 			cells.push_back(newcell);
 			if (type == 2)
 			{
+                total_crystal_start += initial_resources;
 				crystals.push_back(newcell);
 				number_of_crystals++;
 			}
@@ -232,8 +237,8 @@ class Game
         for (int i = 0; i < number_of_bases; i++) {
             cin >> opp_base_index; cin.ignore();
         }
-
-		parsing_the_distance(cells, my_base_index, 0);
+        total_crystal_now = total_crystal_start;
+		//parsing_the_distance(cells, my_base_index, 0);
     }
 
 	int get_my_tants()
@@ -269,6 +274,10 @@ class Game
 			for (int i = 0; i < number_of_cells; i++)
 			{
 				cin >> resources >> my_ants >> opp_ants; cin.ignore();
+                if (cells[i].type == 2)
+                {
+                    total_crystal_now -= (cells[i].initial_ressources - resources);
+                }
 				cells[i].my_ants = my_ants;
 				cells[i].opp_ants = opp_ants;
 				cells[i].initial_ressources = resources;
@@ -311,7 +320,7 @@ class Game
 
 			// WAIT | LINE <sourceIdx> <targetIdx> <strength> | BEACON <cellIdx> <strength> | MESSAGE <text> 
 
-			gluecase(my_base_index, cells);
+			//gluecase(my_base_index, cells);
 
 			int j = 0;
             int egg_farm = 0;
@@ -328,7 +337,6 @@ class Game
                 }
 				if (number_of_crystals_side > 0 && (is_even_odd(crystals[j].index) == side))
                 {
-                    cerr << "simple verif de parsing, mon index est de : " << crystals[j].index << " ma distance de la base est de : " << crystals[j].distance_my_base <<endl;
 					cout << "LINE " << my_base_index << " " << crystals[j].index << " " << 1 << ";";
                     cerr << "LE DEUXIEME IF SE DECLENCHE : " << cells[crystals[j].index].index << " sa distance est de :" << cells[crystals[j].index].distance_my_base << endl;
                 }
@@ -342,12 +350,12 @@ class Game
             {
                 if ((number_of_eggs == 1 && number_of_crystals <= 2) || (my_tants - (my_tants/10) >= opp_tants))
                     break ;
-                if (number_of_eggs_side > 0 && (is_even_odd(eggs[j].index) == side) && egg_farm == 0)
+                if ((total_crystal_now > total_crystal_start/2) && number_of_eggs_side > 0 && (is_even_odd(eggs[j].index) == side) && egg_farm == 0)
                 {
                     cout << "LINE " << my_base_index << " " << eggs[j].index << " " << 1 << ";";
                     egg_farm = 1;
                 }
-                else if (egg_farm == 0 && number_of_eggs_side == 0)
+                else if ((total_crystal_now > total_crystal_start/2) && egg_farm == 0 && number_of_eggs_side == 0)
                 {
                     cout << "LINE " << my_base_index << " " << eggs[j].index << " " << 1 << ";";
                     egg_farm = 1;
