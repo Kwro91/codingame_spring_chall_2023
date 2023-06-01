@@ -156,9 +156,12 @@ int	count_type_in_side(std::vector<Cell> cells, int side, int number_of_values, 
 	return (count);
 }
 
-void	parsing_the_distance(std::vector<Cell> cells, int index, int distance)
+void	parsing_the_distance(std::vector<Cell> &cells, int index, int distance)
 {
+    if (distance > 5)
+        return ;
     cerr << "simple verif de parsing, mon index est de : " << index << " ma distance de la base est de : " << distance <<endl;
+
     if (cells[index].distance_my_base > distance)
 	    cells[index].distance_my_base = distance;
 	if (cells[index].neigh_0 > -1 && (cells[index].distance_my_base + 1 < cells[cells[index].neigh_0].distance_my_base))
@@ -178,8 +181,8 @@ void	parsing_the_distance(std::vector<Cell> cells, int index, int distance)
 
 	if (cells[index].neigh_5 > -1 && (cells[index].distance_my_base + 1 < cells[cells[index].neigh_5].distance_my_base))
 		parsing_the_distance(cells, cells[index].neigh_5, distance + 1);
-
 }
+
 
 class Game
 {
@@ -238,7 +241,7 @@ class Game
             cin >> opp_base_index; cin.ignore();
         }
         total_crystal_now = total_crystal_start;
-		//parsing_the_distance(cells, my_base_index, 0);
+		parsing_the_distance(cells, my_base_index, 0);
     }
 
 	int get_my_tants()
@@ -324,42 +327,49 @@ class Game
 
 			int j = 0;
             int egg_farm = 0;
+            int crystal_take = 0;
             int number_of_crystals_side = count_type_in_side(crystals, side, number_of_crystals, CRYSTAL);
             int number_of_eggs_side = count_type_in_side(eggs, side, number_of_eggs, EGG);
             cerr << "NUMBER OF CRYSTALS IN SIDE " << number_of_crystals_side << endl;
             cerr << "NUMBER OF CRYSTALS " << number_of_crystals << endl;
-			for (int j = 0; j < number_of_crystals; j++)
-			{
-				if (cells[0].type == CRYSTAL && side == ODD)
+            if (gluecase(my_base_index, cells) <= 1)
+            {
+                if (cells[0].type == CRYSTAL)
                 {
-					cout << "LINE " << my_base_index << " " << 0 << " " << 1 << ";";
+                    cout << "LINE " << my_base_index << " " << 0 << " " << 1 << ";";
                     cerr << "LE PREMIER IF SE DECLENCHE" << endl;
                 }
-				if (number_of_crystals_side > 0 && (is_even_odd(crystals[j].index) == side))
+                for (int j = 0; j < number_of_crystals; j++)
                 {
-					cout << "LINE " << my_base_index << " " << crystals[j].index << " " << 1 << ";";
                     cerr << "LE DEUXIEME IF SE DECLENCHE : " << cells[crystals[j].index].index << " sa distance est de :" << cells[crystals[j].index].distance_my_base << endl;
+                    if (cells[crystals[j].index].distance_my_base <= 3)
+                    {
+                        cout << "LINE " << my_base_index << " " << crystals[j].index << " " << 1 << ";";
+                        crystal_take++;
+                    }
+                    else if (crystal_take < 3)
+                    {
+                        cout << "LINE " << my_base_index << " " << crystals[j].index << " " << 1 << ";";
+                        cerr << "LE TROISIEME IF SE DECLENCHE" << endl;
+                        crystal_take++;
+                    }
                 }
-				else if (number_of_crystals_side == 0)
-				{
-					cout << "LINE " << my_base_index << " " << crystals[j].index << " " << 1 << ";";
-                    cerr << "LE TROISIEME IF SE DECLENCHE" << endl;
-				}
-			}
-            for (int j = 0; j < number_of_eggs; j++)
-            {
-                if ((number_of_eggs == 1 && number_of_crystals <= 2) || (my_tants - (my_tants/10) >= opp_tants))
-                    break ;
-                if ((total_crystal_now > total_crystal_start/2) && number_of_eggs_side > 0 && (is_even_odd(eggs[j].index) == side) && egg_farm == 0)
+                for (int j = 0; j < number_of_eggs; j++)
                 {
-                    cout << "LINE " << my_base_index << " " << eggs[j].index << " " << 1 << ";";
-                    egg_farm = 1;
+                    if ((number_of_eggs == 1 && number_of_crystals <= 2) || (my_tants - (my_tants/10) >= opp_tants))
+                        break ;
+                    if ((total_crystal_now > total_crystal_start/2) && number_of_eggs_side > 0 && (is_even_odd(eggs[j].index) == side) && egg_farm == 0)
+                    {
+                        cout << "LINE " << my_base_index << " " << eggs[j].index << " " << 1 << ";";
+                        egg_farm = 1;
+                    }
+                    else if ((total_crystal_now > total_crystal_start/2) && egg_farm == 0 && number_of_eggs_side == 0)
+                    {
+                        cout << "LINE " << my_base_index << " " << eggs[j].index << " " << 1 << ";";
+                        egg_farm = 1;
+                    }
                 }
-                else if ((total_crystal_now > total_crystal_start/2) && egg_farm == 0 && number_of_eggs_side == 0)
-                {
-                    cout << "LINE " << my_base_index << " " << eggs[j].index << " " << 1 << ";";
-                    egg_farm = 1;
-                }
+
             }
             egg_farm = 0;
 			cout << "WAIT;MESSAGE KWRO-42" << endl;
