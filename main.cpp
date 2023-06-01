@@ -26,14 +26,14 @@ class Cell
     int neigh_5;
     int my_ants;
     int opp_ants;
-    int distance_my_base;
+    std::vector<int> distance_my_bases;
 
-    Cell(int index, int type, int initial_ressources, int neigh_0, int neigh_1, int neigh_2, int neigh_3, int neigh_4, int neigh_5, int my_ants, int opp_ants, int distance_my_base):
-        index(index), type(type), initial_ressources(initial_ressources), neigh_0(neigh_0), neigh_1(neigh_1), neigh_2(neigh_2), neigh_3(neigh_3), neigh_4(neigh_4), neigh_5(neigh_5), my_ants(my_ants), opp_ants(opp_ants), distance_my_base(distance_my_base)
+    Cell(int index, int type, int initial_ressources, int neigh_0, int neigh_1, int neigh_2, int neigh_3, int neigh_4, int neigh_5, int my_ants, int opp_ants, std::vector<int> distance_my_bases):
+        index(index), type(type), initial_ressources(initial_ressources), neigh_0(neigh_0), neigh_1(neigh_1), neigh_2(neigh_2), neigh_3(neigh_3), neigh_4(neigh_4), neigh_5(neigh_5), my_ants(my_ants), opp_ants(opp_ants), distance_my_bases(distance_my_bases)
     {
 
     }
-    Cell() = default;
+    Cell():index(0), type(0), initial_ressources(0), neigh_0(0), neigh_1(0), neigh_2(0), neigh_3(0), neigh_4(0), neigh_5(0), my_ants(0), opp_ants(0), distance_my_bases(100,3){}
 };
 
 
@@ -156,31 +156,34 @@ int	count_type_in_side(std::vector<Cell> cells, int side, int number_of_values, 
 	return (count);
 }
 
-void	parsing_the_distance(std::vector<Cell> &cells, int index, int distance)
+void	parsing_the_distance(std::vector<Cell> &cells, int base_nb, int index, int distance)
 {
     if (distance > 5)
         return ;
     cerr << "simple verif de parsing, mon index est de : " << index << " ma distance de la base est de : " << distance <<endl;
 
-    if (cells[index].distance_my_base > distance)
-	    cells[index].distance_my_base = distance;
-	if (cells[index].neigh_0 > -1 && (cells[index].distance_my_base + 1 < cells[cells[index].neigh_0].distance_my_base))
-		parsing_the_distance(cells, cells[index].neigh_0, distance + 1);
+    if (cells[index].distance_my_bases[base_nb] > distance)
+    {
+	    cells[index].distance_my_bases[base_nb] = distance;
 
-	if (cells[index].neigh_1 > -1 && (cells[index].distance_my_base + 1 < cells[cells[index].neigh_1].distance_my_base))
-		parsing_the_distance(cells, cells[index].neigh_1, distance + 1);
+    }
+	if (cells[index].neigh_0 > -1 && (cells[index].distance_my_bases[base_nb] + 1 < cells[cells[index].neigh_0].distance_my_bases[base_nb]))
+		parsing_the_distance(cells, base_nb, cells[index].neigh_0, distance + 1);
 
-	if (cells[index].neigh_2 > -1 && (cells[index].distance_my_base + 1 < cells[cells[index].neigh_2].distance_my_base))
-		parsing_the_distance(cells, cells[index].neigh_2, distance + 1);
+	if (cells[index].neigh_1 > -1 && (cells[index].distance_my_bases[base_nb] + 1 < cells[cells[index].neigh_1].distance_my_bases[base_nb]))
+		parsing_the_distance(cells, base_nb, cells[index].neigh_1, distance + 1);
 
-	if (cells[index].neigh_3 > -1 && (cells[index].distance_my_base + 1 < cells[cells[index].neigh_3].distance_my_base))
-		parsing_the_distance(cells, cells[index].neigh_3, distance + 1);
+	if (cells[index].neigh_2 > -1 && (cells[index].distance_my_bases[base_nb] + 1 < cells[cells[index].neigh_2].distance_my_bases[base_nb]))
+		parsing_the_distance(cells, base_nb, cells[index].neigh_2, distance + 1);
 
-	if (cells[index].neigh_4 > -1 && (cells[index].distance_my_base + 1 < cells[cells[index].neigh_4].distance_my_base))
-		parsing_the_distance(cells, cells[index].neigh_4, distance + 1);
+	if (cells[index].neigh_3 > -1 && (cells[index].distance_my_bases[base_nb] + 1 < cells[cells[index].neigh_3].distance_my_bases[base_nb]))
+		parsing_the_distance(cells, base_nb, cells[index].neigh_3, distance + 1);
 
-	if (cells[index].neigh_5 > -1 && (cells[index].distance_my_base + 1 < cells[cells[index].neigh_5].distance_my_base))
-		parsing_the_distance(cells, cells[index].neigh_5, distance + 1);
+	if (cells[index].neigh_4 > -1 && (cells[index].distance_my_bases[base_nb] + 1 < cells[cells[index].neigh_4].distance_my_bases[base_nb]))
+		parsing_the_distance(cells, base_nb, cells[index].neigh_4, distance + 1);
+
+	if (cells[index].neigh_5 > -1 && (cells[index].distance_my_bases[base_nb] + 1 < cells[cells[index].neigh_5].distance_my_bases[base_nb]))
+		parsing_the_distance(cells, base_nb, cells[index].neigh_5, distance + 1);
 }
 
 
@@ -202,6 +205,8 @@ class Game
 	std::vector<Cell> cells;
 	std::vector<Cell> crystals;
 	std::vector<Cell> eggs;
+    std::vector<Cell> my_bases;
+    std::vector<Cell> opp_bases;
 
     void	init()
     {
@@ -217,7 +222,7 @@ class Game
         cerr << "Cells : " << number_of_cells << endl;
         for (int i = 0; i < number_of_cells; i++) {
             cin >> type >> initial_resources >> neigh_0 >> neigh_1 >> neigh_2 >> neigh_3 >> neigh_4 >> neigh_5; cin.ignore();
-			Cell newcell (i, type, initial_resources, neigh_0, neigh_1, neigh_2, neigh_3, neigh_4, neigh_5, 0, 0, 100);
+			Cell newcell (i, type, initial_resources, neigh_0, neigh_1, neigh_2, neigh_3, neigh_4, neigh_5, 0, 0, {100, 100 , 100});
 			cells.push_back(newcell);
 			if (type == 2)
 			{
@@ -232,16 +237,21 @@ class Game
 			}
         }
         cin >> number_of_bases; cin.ignore();
+        my_bases.resize(number_of_bases);
+        opp_bases.resize(number_of_bases);
             
         for (int i = 0; i < number_of_bases; i++) {
             cin >> my_base_index; cin.ignore();
+            my_bases[i].index = my_base_index;
         }
 
         for (int i = 0; i < number_of_bases; i++) {
             cin >> opp_base_index; cin.ignore();
+            opp_bases[i].index = opp_base_index;
+		    parsing_the_distance(cells, i, my_base_index, 0);
         }
         total_crystal_now = total_crystal_start;
-		parsing_the_distance(cells, my_base_index, 0);
+
     }
 
 	int get_my_tants()
@@ -269,9 +279,7 @@ class Game
 		int resources; // the current amount of eggs/crystals on this cell
 		int my_ants; // the amount of your ants on this cell
 		int opp_ants; // the amount of opponent ants on this cell
-		int side = 0;
 
-		side = is_even_odd(my_base_index);
 		while (1)
 		{
 			for (int i = 0; i < number_of_cells; i++)
@@ -323,55 +331,57 @@ class Game
 
 			// WAIT | LINE <sourceIdx> <targetIdx> <strength> | BEACON <cellIdx> <strength> | MESSAGE <text> 
 
-			//gluecase(my_base_index, cells);
 
 			int j = 0;
             int egg_farm = 0;
-            int crystal_take = 0;
-            int number_of_crystals_side = count_type_in_side(crystals, side, number_of_crystals, CRYSTAL);
-            int number_of_eggs_side = count_type_in_side(eggs, side, number_of_eggs, EGG);
-            cerr << "NUMBER OF CRYSTALS IN SIDE " << number_of_crystals_side << endl;
+            int crystal_farm = 0;
+            
             cerr << "NUMBER OF CRYSTALS " << number_of_crystals << endl;
             if (gluecase(my_base_index, cells) <= 1)
             {
-                if (cells[0].type == CRYSTAL)
+                for (int nb = 0; nb < number_of_bases; nb++)
                 {
-                    cout << "LINE " << my_base_index << " " << 0 << " " << 1 << ";";
-                    cerr << "LE PREMIER IF SE DECLENCHE" << endl;
+                    if (cells[0].type == CRYSTAL)
+                    {
+                        cout << "LINE " << my_bases[nb].index << " " << 0 << " " << 1 << ";";
+                        cerr << "LE PREMIER IF SE DECLENCHE" << endl;
+                    }
                 }
                 for (int j = 0; j < number_of_crystals; j++)
                 {
-                    cerr << "LE DEUXIEME IF SE DECLENCHE : " << cells[crystals[j].index].index << " sa distance est de :" << cells[crystals[j].index].distance_my_base << endl;
-                    if (cells[crystals[j].index].distance_my_base <= 3)
+                    cerr << "LE DEUXIEME IF SE DECLENCHE : " << cells[crystals[j].index].index << " sa distance est de :" << cells[crystals[j].index].distance_my_bases[0] << endl;
+                    for (int nb = 0; nb < number_of_bases; nb++)
                     {
-                        cout << "LINE " << my_base_index << " " << crystals[j].index << " " << 1 << ";";
-                        crystal_take++;
-                    }
-                    else if (crystal_take < 3)
-                    {
-                        cout << "LINE " << my_base_index << " " << crystals[j].index << " " << 1 << ";";
-                        cerr << "LE TROISIEME IF SE DECLENCHE" << endl;
-                        crystal_take++;
-                    }
-                }
-                for (int j = 0; j < number_of_eggs; j++)
-                {
-                    if ((number_of_eggs == 1 && number_of_crystals <= 2) || (my_tants - (my_tants/10) >= opp_tants))
-                        break ;
-                    if ((total_crystal_now > total_crystal_start/2) && number_of_eggs_side > 0 && (is_even_odd(eggs[j].index) == side) && egg_farm == 0)
-                    {
-                        cout << "LINE " << my_base_index << " " << eggs[j].index << " " << 1 << ";";
-                        egg_farm = 1;
-                    }
-                    else if ((total_crystal_now > total_crystal_start/2) && egg_farm == 0 && number_of_eggs_side == 0)
-                    {
-                        cout << "LINE " << my_base_index << " " << eggs[j].index << " " << 1 << ";";
-                        egg_farm = 1;
+                        if (cells[crystals[j].index].distance_my_bases[nb] <= 3)
+                        {
+                            cout << "LINE " << my_bases[nb].index << " " << crystals[j].index << " " << 1 << ";";
+                            crystal_farm++;
+                        }
+                        else if (crystal_farm < 3 * number_of_bases)
+                        {
+                            cout << "LINE " << my_bases[nb].index << " " << crystals[j].index << " " << 1 << ";";
+                            cerr << "LE TROISIEME IF SE DECLENCHE" << endl;
+                            crystal_farm++;
+                        }
                     }
                 }
-
+                // for (int j = 0; j < number_of_eggs; j++)
+                // {
+                //     if ((number_of_eggs == 1 && number_of_crystals <= 2) || (my_tants - (my_tants/10) >= opp_tants))
+                //         break ;
+                //     if ((total_crystal_now > total_crystal_start/2) && egg_farm == 0)
+                //     {
+                //         cout << "LINE " << my_base_index << " " << eggs[j].index << " " << 1 << ";";
+                //         egg_farm = 1;
+                //     }
+                //     else if ((total_crystal_now > total_crystal_start/2) && egg_farm == 0 && number_of_eggs_side == 0)
+                //     {
+                //         cout << "LINE " << my_base_index << " " << eggs[j].index << " " << 1 << ";";
+                //         egg_farm = 1;
+                //     }
+                // }
             }
-            egg_farm = 0;
+            // egg_farm = 0;
 			cout << "WAIT;MESSAGE KWRO-42" << endl;
 			turn++;
 		}
